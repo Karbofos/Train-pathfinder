@@ -59,13 +59,13 @@ int fill_city(char cityfile_name[32])
      return i;
 }
 
-int city_number(char city_name)
+int city_number(char city_name[32])
 {
      /* Возвращает номер города в списке, если город объявлен, и -1, если не найден. */
      /* Вообще, ситуация , когда город не найден, возникать не должна.  */
      for (int i=0; i<=cities_present; i++)
      {
-	  if (strcmp() == 0) return i;
+	  if (strcmp(sity_name,city[i].cityname) == 0) return i;
      }
      return -1;
 }

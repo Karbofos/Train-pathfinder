@@ -26,7 +26,7 @@ struct time
 struct way
 {
      struct time departure_time, arrival_time;
-     char day; /* День недели: примем 1 для понедельника и 7 для воскресенья */
+     char departure_day, arrival_day; /* День недели: примем 1 для понедельника и 7 для воскресенья */
 };
 
 struct way map[30][30][24];
@@ -68,6 +68,17 @@ int city_number(char city_name[32])
 	  if (strcmp(sity_name,city[i].cityname) == 0) return i;
      }
      return -1;
+}
+
+int city_roads_load(char city_name[32])
+{
+     /* Вот тут стоит сказать пару слов о том, как в файле представляются пути. */
+     /* Название файла - имя города, _ИЗ_ которого идут дороги */
+     /* В пределах файла записи отсортированы по городу, _В_ который дороги ведут */
+     /* далее записаны в следующих типах */
+     /* char time char time, оно же */
+     /* char char char char char char (если смотреть на типы в записи) */
+     /* день | час отправления | минута отправления | день прибытия | час прибытия | минута прибытия */
 }
 
 int main ()

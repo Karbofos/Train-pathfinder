@@ -20,7 +20,7 @@
 
 struct time
 {
-     char hour, minute, day;
+     int hour, minute, day;
      /* День недели: примем 1 для понедельника и 7 для воскресенья */
 };
 
@@ -29,13 +29,13 @@ struct times
      struct time departure_time, arrival_time;
 };
 
-struct city
+struct point
 {
      struct times way[50];
      int ways_present;
 };
 
-struct city map[30][30];
+struct point map[30][30];
 /* Отсюда и далее: в матрице map ось x - город, ИЗ которого едем */
 /* Ось y - город, В который едем и ось z - время отправления/прибытия. */
 
@@ -62,6 +62,7 @@ int fill_city(char cityfile_name[32])
 	  fscanf(cityfile,"%s\n",city[i].name);
 	  i++;
      }
+     fclose(cityfile);
      return i;
 }
 
@@ -87,6 +88,7 @@ void city_roads_load()
      /* день | час отправления | минута отправления | день прибытия | час прибытия | минута прибытия */
      char name[32];
      int number;
+     cities_present = fill_city("city.txt");
      for (int i=0; i<=30; i++)
 	  for (int j=0; j<=30; j++) map[i][j].ways_present=-1;
      for (int i = 0; i< cities_present; i++)
@@ -96,13 +98,18 @@ void city_roads_load()
 	  {
 	       while (!feof(cityfile))
 	       {
-		    fscanf(cityfile,"%s\n",name);
+		    fscanf(cityfile,"%s",name);
 		    number = city_number(name);
 		    if (number != -1 ) 
 		    {
 			 map[i][number].ways_present++;
 			 int l = map[i][number].ways_present;
-			 fscanf(cityfile,"%i %i %i %i %i %i\n",map[i][number].way[l].departure_time.day, map[i][number].way[l].departure_time.hour, map[i][number].way[l].departure_time.minute, map[i][number].way[l].arrival_time.day, map[i][number].way[l].arrival_time.hour, map[i][number].way[l].arrival_time.minute);
+			 fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.day);
+			 fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.hour);
+			 fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.minute);
+			 fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.day);
+			 fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.hour);
+			 fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.minute);
 		    }
 		    else printf ("Город %s присутствует в файле путей города %s, но не объявлен в списке, пропускаем.", name, city[i].name);
 	       }
@@ -121,7 +128,6 @@ int find_closest(int from_city, int to_city, struct time from_time)
 
 int main ()
 {
-     cities_present = fill_city("city.txt");
      city_roads_load();
      char asd[32];
      if (cities_present == -1)

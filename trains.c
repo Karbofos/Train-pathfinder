@@ -35,6 +35,12 @@ struct point
      int ways_present;
 };
 
+struct closest_road
+{
+     bool good;
+     int number;
+};
+
 struct point map[30][30];
 /* Отсюда и далее: в матрице map ось x - город, ИЗ которого едем */
 /* Ось y - город, В который едем и ось z - время отправления/прибытия. */
@@ -119,17 +125,40 @@ void city_roads_load()
      }
 }
 
-int find_closest(int from_city, int to_city, struct time from_time)
+struct closest_road find_closest(int from_city, int to_city, struct time from_time)
 {
-     /* Вот тут проблема - функция должна не только возратить номер пути для массива map[from_city][to_city].way[], но и указать, попадает ли он в рамки 24х часов */
-     /* 	  т.е. пометить его как "плохой" или "хороший". Наверное, сделаю через тип функции. */
-     return 0;
+     struct closest_road result;
+     /*Возвращает -1 в result.number, если дорога не определена; номер дороги в ином случае."Хорошие" дороги возвращает с result.good = TRUE. "Плохие" с FALSE.*/
+     int arrival_minutes, departure_minutes, difference_time, best_difference_time;
+     best_difference_time = 10080; /*Количество минут в неделе*/
+     arrival_minutes = from_time.day*24*60 + from_time.hour*60 + from_time.minute;
+     result.number = -1;
+     for (int i=0;i<=map[from_city][to_city].ways_present;i++)
+     {
+	  departure_minutes=map[from_city][to_city].way[i].departure_time.day*24*60 + map[from_city][to_city].way[i].departure_time.hour*60 + map[from_city][to_city].way[i].departure_time.minute;
+	  if (departure_minutes <= arrival_minutes) difference_time = 10080 - arrival_minutes + departure_minutes;
+	  else difference_time = departure_minutes - arrival_minutes;
+	  if (difference_time < best_difference_time)
+	  {
+	       best_difference_time = difference_time;
+	       result.number = i;
+	  }
+     }
+     if (map[from_city][to_city].ways_present != 0)
+     {
+	  /*Если разница между временем прибытия и временм отправления меньше суток, помечаем найденный путь как "хороший"*/
+	  if (best_difference_time <= 1440) result.good = true;
+	  else result.good = false;
+     }
+     return result;
 }
 
 int main ()
 {
      city_roads_load();
-     char asd[32];
+     char from[32], to[32];
+     struct time asd;
+     struct closest_road travel_result;
      if (cities_present == -1)
      {
 	  printf("Ошибка открытия файла.\n");
@@ -141,8 +170,21 @@ int main ()
 	  printf("Ни один город не объявлен в файле. Некуда идти ._.\n");
 	  return 0;
      }
-     printf("Введите название искомого города\n");
-     scanf("%s", asd);
-     if (city_number(asd) != -1) printf("Город %s значится в массиве под номером %i\n",asd, city_number(asd));
-     else printf("Город %s не найден в списке\n", asd);
+     printf("Введите название города, из которого едем\n");
+     scanf("%s", from);
+     printf("Введите название города, в который едем\n");
+     scanf("%s", to);
+     if (city_number(from) != -1 && city_number(to) != -1)
+	  {
+	       printf("Введите желаемое время отправления: день (1-7), час (0 - 23) и минута (0-59)\n");
+	       scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
+	       int from_number, to_number;
+	       from_number = city_number(from);
+	       to_number =  city_number(to);
+	       travel_result = find_closest(from_number, to_number, asd);
+	       if (travel_result.number != -1) printf("Ближайший поезд отправляется в %i %i - %i\n", map[from_number][to_number].way[travel_result.number].departure_time.day,  map[from_number][to_number].way[travel_result.number].departure_time.hour,  map[from_number][to_number].way[travel_result.number].departure_time.minute);
+	       else printf("Уехать вам не суждено\n");
+	  }
+     else printf ("Не найден город отправления/прибытия\n");
+     return 0;
 }

@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include "SDL.h"	/*В будущем для графики*/
+/*#include "SDL.h"*/
 
 struct time
 {

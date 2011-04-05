@@ -56,6 +56,8 @@ struct cityname city[30];
 const int max_cities = 32;
 int cities_present;
 
+FILE *bad_file = fopen
+
 int fill_city(char cityfile_name[32])
 {
      /* Возвращает число записей в массиве в случае удачного заполения оного  */
@@ -153,18 +155,18 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      return result;
 }
 
-void find (int now, int final, bool good, char path[100])
+void find (int now, int final, bool good, char path[100], struct  time departure_time)
 {
      char path_next[100], asd[3];
      for (int i=0; i<=30; i++)
      {
 	  sprintf(asd,"%i",i);
-	  struct closest_road path_result = find_closest(now, i);
+	  struct closest_road path_result = find_closest(now, i, departure_time);
 	  if (path_result.number != -1 && strstr(path, asd) == NULL && i != final)
 	  {
 	       if (!path_result.good) good = false; 
 	       sprintf(path_next,"%s %s",path,asd);
-	       find(i, final, good, path);
+	       find(i, final, good, path, map[now][i].way[path_result.number].departure_time);
 	  }
 	  else if (path_result.number != -1 && strstr(path, asd) == NULL && i == final)
 	  {

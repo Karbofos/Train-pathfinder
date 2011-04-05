@@ -153,6 +153,30 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      return result;
 }
 
+void find (int now, int final, bool good, char path[100])
+{
+     char path_next[100], asd[3];
+     for (int i=0; i<=30; i++)
+     {
+	  sprintf(asd,"%i",i);
+	  struct closest_road path_result = find_closest(now, i);
+	  if (path_result.number != -1 && strstr(path, asd) == NULL && i != final)
+	  {
+	       if (!path_result.good) good = false; 
+	       sprintf(path_next,"%s %s",path,asd);
+	       find(i, final, good, path);
+	  }
+	  else if (path_result.number != -1 && strstr(path, asd) == NULL && i == final)
+	  {
+	       sprintf(path_next,"%s %s",path,asd);
+	       if (path_result.good) fprintf(good_file,"%s \n",path_next);
+	       else fprintf(bad_file,"%s \n",path_next);
+	  }
+     }     
+}
+
+
+
 int main ()
 {
      city_roads_load();
@@ -165,7 +189,7 @@ int main ()
 	  return 1;
      }
      if (cities_present != 0) printf("Всего городов - %i \n", cities_present);
-     else 
+     else
      {
 	  printf("Ни один город не объявлен в файле. Некуда идти ._.\n");
 	  return 0;

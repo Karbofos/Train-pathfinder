@@ -56,7 +56,7 @@ struct cityname city[30];
 const int max_cities = 32;
 int cities_present;
 
-FILE *bad_file = fopen
+FILE *bad_file, *good_file;
 
 int fill_city(char cityfile_name[32])
 {
@@ -97,7 +97,7 @@ void city_roads_load()
      char name[32];
      int number;
      cities_present = fill_city("city.txt");
-     for (int i=0; i<=30; i++)
+     for (int i=0; i< 30; i++)
 	  for (int j=0; j < 30; j++) map[i][j].ways_present=-1;
      for (int i = 0; i< cities_present; i++)
      {

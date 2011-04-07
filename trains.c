@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include "SDL.h"	/*В будущем для графики*/
+/*#include "SDL.h"*/
 
 struct time
 {
@@ -55,6 +55,8 @@ struct cityname city[30];
 
 const int max_cities = 32;
 int cities_present;
+
+FILE *bad_file = fopen
 
 int fill_city(char cityfile_name[32])
 {
@@ -153,6 +155,30 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      return result;
 }
 
+void find (int now, int final, bool good, char path[100], struct  time departure_time)
+{
+     char path_next[100], asd[3];
+     for (int i=0; i<=30; i++)
+     {
+	  sprintf(asd,"%i",i);
+	  struct closest_road path_result = find_closest(now, i, departure_time);
+	  if (path_result.number != -1 && strstr(path, asd) == NULL && i != final)
+	  {
+	       if (!path_result.good) good = false; 
+	       sprintf(path_next,"%s %s",path,asd);
+	       find(i, final, good, path, map[now][i].way[path_result.number].departure_time);
+	  }
+	  else if (path_result.number != -1 && strstr(path, asd) == NULL && i == final)
+	  {
+	       sprintf(path_next,"%s %s",path,asd);
+	       if (path_result.good) fprintf(good_file,"%s \n",path_next);
+	       else fprintf(bad_file,"%s \n",path_next);
+	  }
+     }     
+}
+
+
+
 int main ()
 {
      city_roads_load();
@@ -165,7 +191,7 @@ int main ()
 	  return 1;
      }
      if (cities_present != 0) printf("Всего городов - %i \n", cities_present);
-     else 
+     else
      {
 	  printf("Ни один город не объявлен в файле. Некуда идти ._.\n");
 	  return 0;

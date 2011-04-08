@@ -22,6 +22,7 @@
 #define STRING_LENGTH 32
 #define CITY_MAX_WAYS 50
 #define MAX_DIFFERENCE_TIME 1440
+#define LIST_FILE "city.txt"
 
 struct time
 {
@@ -108,15 +109,17 @@ int city_roads_load()
      /* день | час отправления | минута отправления | день прибытия | час прибытия | минута прибытия */
      /* Возвращает 0 в случае удачного открытия файла и наличия в нем записей; 1 если файл открыт, но записей нет и 2 при ошибке открытия */
      char name[STRING_LENGTH];
+     char openfile[STRING_LENGTH + 10];
      int number, result;
-     cities_present = fill_city("city.txt");
+     cities_present = fill_city(LIST_FILE);
      if (cities_present != -1)
      {
 	  for (int i=0; i< MAX_CITY_COUNT; i++)
 	       for (int j=0; j < MAX_CITY_COUNT; j++) map[i][j].ways_present=-1;
 	  for (int i = 0; i< cities_present; i++)
 	  {
-	       FILE *cityfile = fopen(city[i].name,"r");
+	       sprintf(openfile,"%s/ways.txt",city[i].name);
+	       FILE *cityfile = fopen(openfile,"r");
 	       if (cityfile != NULL)
 	       {
 		    while (!feof(cityfile))

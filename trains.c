@@ -53,7 +53,7 @@ struct dfs_type
      int camefrom;
 };
 
-struct dfs_type dfs_array;
+struct dfs_type dfs_array[MAX_CITY_COUNT];
 
 struct point map[MAX_CITY_COUNT][MAX_CITY_COUNT];
 /* Отсюда и далее: в матрице map ось x - город, ИЗ которого едем */
@@ -178,29 +178,43 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      return result;
 }
 
-void find (int now, int final, bool good, char path[100], struct  time departure_time)
+void printstats_to_file (int final, bool good)
 {
-     char path_next[100], asd[3];
-     for (int i=0; i < cities_present; i++)
-     {
-	  sprintf(asd,"%i",i);
-	  struct closest_road path_result = find_closest(now, i, departure_time);
-	  if (path_result.number != -1 && strstr(path, asd) == NULL && i != final)
-	  {
-	       if (!path_result.good) good = false; 
-	       sprintf(path_next,"%s %s",path,asd);
-	       find(i, final, good, path, map[now][i].way[path_result.number].departure_time);
-	  }
-	  else if (path_result.number != -1 && strstr(path, asd) == NULL && i == final)
-	  {
-	       sprintf(path_next,"%s %s",path,asd);
-	       if (path_result.good) fprintf(good_file,"%s \n",path_next);
-	       else fprintf(bad_file,"%s \n",path_next);
-	  }
-     }     
+     
 }
 
+int dfs (int now, int final, bool good, struct time arrival_time)
+{
+     struct closest_road result;
+     for (int i=0; i < cities_present; i++)
+     {
+	  result = find_closest(now, i, arrival_time);
+	  if (!result.good) good = false;
+	  if (map[now][i].ways_present != 0)
+	  {
+	       if (i == final) printstats_to_file(final, good);
+	       else
+	       {
+		    dfs_array[i].washere=true;
+		    dfs(i, final, good, map[now][i].way[result.number].arrival_time);
+		    dfs_array[i].washere=false;
+	       }
+	  }
+     }     
+     return 0;
+}
 
+int search (int from, int to, struct time departure_time)
+{
+     good_file = fopen("good.txt","w");
+     bad_file = fopen("bad.txt","w");
+     for (int i=0; i < cities_present; i++)
+     {
+	  dfs_array[i].washere = false;
+     }
+     dfs(from, to, true, departure_time);
+     return 0;
+}
 
 int main ()
 {

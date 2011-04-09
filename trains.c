@@ -69,8 +69,6 @@ struct cityname city[MAX_CITY_COUNT];
 
 int cities_present;
 
-FILE *bad_file, *good_file;
-
 int fill_city(char cityfile_name[STRING_LENGTH])
 {
      /* Возвращает число записей в массиве в случае удачного заполения оного  */
@@ -180,7 +178,24 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
 
 void printstats_to_file (int final, bool good)
 {
-     
+     /*Вывод в обратном порядке по указателям. Не очень ок.*/
+     FILE *print_file;
+     int temp;
+     printf("Ты печатать начал?\n");
+     if (good) print_file = fopen("good.txt","a");
+     else print_file =fopen("bad.txt","a");
+     printf("Ты файл открыл?\n");
+     do
+     {
+	  temp = final;
+	  do
+	  {
+	       temp = dfs_array[temp].camefrom;
+	  }while(dfs_array[temp].camefrom != -1);
+	  fprintf(print_file,"%i ", temp);
+	  dfs_array[temp].camefrom = -1;	       
+     }while(temp != final);
+     fprintf(print_file,"%i\n", final);
 }
 
 int dfs (int now, int final, bool good, struct time arrival_time)
@@ -192,7 +207,11 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 	  if (!result.good) good = false;
 	  if (map[now][i].ways_present != 0)
 	  {
-	       if (i == final) printstats_to_file(final, good);
+	       if (i == final) 
+	       {
+		    printf("Дошли до конца, %i\n", i);
+		    printstats_to_file(final, good);
+	       }
 	       else
 	       {
 		    dfs_array[i].washere=true;
@@ -206,12 +225,12 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 
 int search (int from, int to, struct time departure_time)
 {
-     good_file = fopen("good.txt","w");
-     bad_file = fopen("bad.txt","w");
      for (int i=0; i < cities_present; i++)
      {
 	  dfs_array[i].washere = false;
+	  dfs_array[i].camefrom = -1;
      }
+     dfs_array[from].washere = true;
      dfs(from, to, true, departure_time);
      return 0;
 }
@@ -221,8 +240,7 @@ int main ()
      char from[STRING_LENGTH], to[STRING_LENGTH];
      struct time asd;
      struct closest_road travel_result;
-     int empty = city_roads_load();
-     if (empty == 0)
+     if (city_roads_load() == 0)
      {
 	  printf("Введите название города, из которого едем\n");
 	  scanf("%s", from);
@@ -235,14 +253,13 @@ int main ()
 		    int from_number, to_number;
 		    from_number = city_number(from);
 		    to_number =  city_number(to);
+		    search(from_number, to_number, asd);
 		    travel_result = find_closest(from_number, to_number, asd);
 		    if (travel_result.number != -1) printf("Ближайший поезд отправляется в %i %i - %i\n", map[from_number][to_number].way[travel_result.number].departure_time.day,  map[from_number][to_number].way[travel_result.number].departure_time.hour,  map[from_number][to_number].way[travel_result.number].departure_time.minute);
 		    else printf("Уехать вам не суждено\n");
 	       }
 	  else printf ("Не найден город отправления/прибытия\n");
      }
-     else 
-	  if (empty == 1) printf("Не объявлен ни один город. Некуда ехать.\n");
-          else printf("Ошибка открытия файла-списка.\n");
+     else printf("Ошибка открытия файла-списка или загрузки путей.\n");
      return 0;
 }

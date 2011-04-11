@@ -179,16 +179,23 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
 void printstats_to_file (int final, bool good)
 {
      FILE *print_file;
-     int temp;
+     int temp, count;
      if (good) print_file = fopen("good.txt","a");
      else print_file =fopen("bad.txt","a");
+     count = 0;
+     temp = final;
+     while (dfs_array[temp].camefrom != -1) 
+     {
+	  count++;
+	  temp = dfs_array[temp].camefrom;
+     }
      do
      {
-     	  temp = final;
-     	  while (dfs_array[dfs_array[temp].camefrom].camefrom != -1) temp = dfs_array[temp].camefrom;
-     	  fprintf(print_file,"%i ", dfs_array[temp].camefrom);
-     	  dfs_array[temp].camefrom = -1;
-     }while (temp != final);
+	  temp = final;
+     	  for (int i = 0; i < count; i++) temp = dfs_array[temp].camefrom;
+     	  fprintf(print_file,"%i ", temp);
+	  count--;
+     }while (count != 0);
      fprintf(print_file,"%i -1\n", final);
      fclose(print_file);
 }
@@ -237,35 +244,47 @@ int search (int from, int to, struct time departure_time)
      ways_count = 0;
      if (good_file != NULL)
      {
+	  printf("Найдены маршруты, ожидание на станциях между которыми меньше 24 часов:\n");
+	  fscanf(good_file,"%i", &point);
 	  while (!feof(good_file))
 	  {
 	       ways_count++;
-	       fscanf(good_file,"%i", &point);
-	       printf("%i)%s ", ways_count, city[point].name);
+	       if (!feof(good_file))  printf("%i)%s ", ways_count, city[point].name);
 	       fscanf(good_file,"%i", &point);
 	       while (point != -1)
 	       {
 		    printf("=> %s ", city[point].name);
 		    fscanf(good_file,"%i", &point);
 	       }
+	       fscanf(good_file,"%i", &point);
 	       printf("\n");
 	  }
+	  fclose(good_file);
+	  remove("good.txt");
      }
      else 
      {
-          while (!feof(bad_file))
-          {
-	       ways_count++;
+	  if (bad_file != NULL)
+	  {
+	       printf("Оптимальных маршрутов не найдено, но есть несколько других:\n");
 	       fscanf(bad_file,"%i", &point);
-	       printf("%i)%s ",ways_count, city[point].name);
-	       fscanf(bad_file,"%i", &point);
-	       while (point != -1)
+	       while (!feof(bad_file))
 	       {
-                    printf("=> %s ", city[point].name);
+		    ways_count++;
+		    printf("%i)%s ",ways_count, city[point].name);
 		    fscanf(bad_file,"%i", &point);
+		    while (point != -1)
+		    {
+			 printf("=> %s ", city[point].name);
+			 fscanf(bad_file,"%i", &point);
+		    }
+		    fscanf(bad_file,"%i", &point);
+		    printf("\n");
 	       }
-               printf("\n");
-          }
+	       fclose(bad_file);
+	       remove("bad.txt");
+	  }
+	  else printf("Не найдено ни одного маршрута\n");
      }
      return 0;
 }

@@ -182,19 +182,15 @@ void printstats_to_file (int final, bool good)
      int temp;
      if (good) print_file = fopen("good.txt","a");
      else print_file =fopen("bad.txt","a");
-     temp = final;
-     /* do */
-     /* { */
-     /* 	  temp = final; */
-     /* 	  while (dfs_array[temp].camefrom != -1) temp = dfs_array[temp].ccaamefrom; */
-     /* 	  fprintf(print_file,"%i ", temp); */
-     /* 	  dfs_array[temp].camefrom = -1; */
-     /* }while (temp != final); */
-     /* fprintf(print_file,"%i\n", final); */
+     do
+     {
+     	  temp = final;
+     	  while (dfs_array[dfs_array[temp].camefrom].camefrom != -1) temp = dfs_array[temp].camefrom;
+     	  fprintf(print_file,"%i ", dfs_array[temp].camefrom);
+     	  dfs_array[temp].camefrom = -1;
+     }while (temp != final);
+     fprintf(print_file,"%i\n", final);
      fclose(print_file);
-     printf("%i\n", dfs_array[1].camefrom);
-     printf("%s %s %s\n", city[0].name, city[1].name, city[2].name);
-     printf("%i %i %i\n", dfs_array[0].camefrom, dfs_array[1].camefrom, dfs_array[2].camefrom);
 }
 
 int dfs (int now, int final, bool good, struct time arrival_time)

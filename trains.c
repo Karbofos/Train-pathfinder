@@ -189,7 +189,7 @@ void printstats_to_file (int final, bool good)
      	  fprintf(print_file,"%i ", dfs_array[temp].camefrom);
      	  dfs_array[temp].camefrom = -1;
      }while (temp != final);
-     fprintf(print_file,"%i\n", final);
+     fprintf(print_file,"%i -1\n", final);
      fclose(print_file);
 }
 
@@ -221,6 +221,8 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 
 int search (int from, int to, struct time departure_time)
 {
+     FILE *good_file, *bad_file;
+     int ways_count, point;
      for (int i=0; i < cities_present; i++)
      {
 	  dfs_array[i].washere = false;
@@ -228,6 +230,43 @@ int search (int from, int to, struct time departure_time)
      }
      dfs_array[from].washere = true;
      dfs(from, to, true, departure_time);
+     
+     /*Начало вывода списка*/
+     good_file = fopen("good.txt", "r");
+     bad_file = fopen("bad.txt", "r");
+     ways_count = 0;
+     if (good_file != NULL)
+     {
+	  while (!feof(good_file))
+	  {
+	       ways_count++;
+	       fscanf(good_file,"%i", &point);
+	       printf("%i)%s ", ways_count, city[point].name);
+	       fscanf(good_file,"%i", &point);
+	       while (point != -1)
+	       {
+		    printf("=> %s ", city[point].name);
+		    fscanf(good_file,"%i", &point);
+	       }
+	       printf("\n");
+	  }
+     }
+     else 
+     {
+          while (!feof(bad_file))
+          {
+	       ways_count++;
+	       fscanf(bad_file,"%i", &point);
+	       printf("%i)%s ",ways_count, city[point].name);
+	       fscanf(bad_file,"%i", &point);
+	       while (point != -1)
+	       {
+                    printf("=> %s ", city[point].name);
+		    fscanf(bad_file,"%i", &point);
+	       }
+               printf("\n");
+          }
+     }
      return 0;
 }
 

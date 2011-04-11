@@ -179,45 +179,45 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
 void printstats_to_file (int final, bool good)
 {
      /*Вывод в обратном порядке по указателям. Не очень ок.*/
+     printf("Начинаем печать результата\n");
      FILE *print_file;
+     char buf[100];
      int temp;
-     printf("Ты печатать начал?\n");
      if (good) print_file = fopen("good.txt","a");
      else print_file =fopen("bad.txt","a");
-     printf("Ты файл открыл?\n");
-     do
+     temp = final;
+     while (dfs_array[temp].camefrom != -1)
      {
-	  temp = final;
-	  do
-	  {
-	       temp = dfs_array[temp].camefrom;
-	  }while(dfs_array[temp].camefrom != -1);
-	  fprintf(print_file,"%i ", temp);
-	  dfs_array[temp].camefrom = -1;	       
-     }while(temp != final);
-     fprintf(print_file,"%i\n", final);
+	  sprintf(buf,"%s %i",buf, temp);
+	  temp = dfs_array[temp].camefrom;
+     }
+     sprintf(buf,"%s %i",buf, temp);
+     fprintf(print_file,"%s\n",buf);
+     fclose(print_file);
 }
 
 int dfs (int now, int final, bool good, struct time arrival_time)
 {
+     printf("Входим в dfs\n");
      struct closest_road result;
      for (int i=0; i < cities_present; i++)
      {
 	  result = find_closest(now, i, arrival_time);
 	  if (!result.good) good = false;
-	  if (map[now][i].ways_present != 0)
+	  if (map[now][i].ways_present != -1 && dfs_array[i].washere == false)
 	  {
+	       dfs_array[i].camefrom = now;
+	       dfs_array[i].washere = true;
 	       if (i == final) 
 	       {
-		    printf("Дошли до конца, %i\n", i);
 		    printstats_to_file(final, good);
 	       }
 	       else
 	       {
-		    dfs_array[i].washere=true;
 		    dfs(i, final, good, map[now][i].way[result.number].arrival_time);
-		    dfs_array[i].washere=false;
 	       }
+	       dfs_array[i].washere = false;
+	       dfs_array[i].camefrom = -1;
 	  }
      }     
      return 0;
@@ -225,6 +225,7 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 
 int search (int from, int to, struct time departure_time)
 {
+     printf("Начинаем поиск\n");
      for (int i=0; i < cities_present; i++)
      {
 	  dfs_array[i].washere = false;

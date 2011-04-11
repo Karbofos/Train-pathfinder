@@ -178,27 +178,27 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
 
 void printstats_to_file (int final, bool good)
 {
-     /*Вывод в обратном порядке по указателям. Не очень ок.*/
-     printf("Начинаем печать результата\n");
      FILE *print_file;
-     char buf[100];
      int temp;
      if (good) print_file = fopen("good.txt","a");
      else print_file =fopen("bad.txt","a");
      temp = final;
-     while (dfs_array[temp].camefrom != -1)
-     {
-	  sprintf(buf,"%s %i",buf, temp);
-	  temp = dfs_array[temp].camefrom;
-     }
-     sprintf(buf,"%s %i",buf, temp);
-     fprintf(print_file,"%s\n",buf);
+     /* do */
+     /* { */
+     /* 	  temp = final; */
+     /* 	  while (dfs_array[temp].camefrom != -1) temp = dfs_array[temp].ccaamefrom; */
+     /* 	  fprintf(print_file,"%i ", temp); */
+     /* 	  dfs_array[temp].camefrom = -1; */
+     /* }while (temp != final); */
+     /* fprintf(print_file,"%i\n", final); */
      fclose(print_file);
+     printf("%i\n", dfs_array[1].camefrom);
+     printf("%s %s %s\n", city[0].name, city[1].name, city[2].name);
+     printf("%i %i %i\n", dfs_array[0].camefrom, dfs_array[1].camefrom, dfs_array[2].camefrom);
 }
 
 int dfs (int now, int final, bool good, struct time arrival_time)
 {
-     printf("Входим в dfs\n");
      struct closest_road result;
      for (int i=0; i < cities_present; i++)
      {
@@ -225,7 +225,6 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 
 int search (int from, int to, struct time departure_time)
 {
-     printf("Начинаем поиск\n");
      for (int i=0; i < cities_present; i++)
      {
 	  dfs_array[i].washere = false;
@@ -240,7 +239,6 @@ int main ()
 {
      char from[STRING_LENGTH], to[STRING_LENGTH];
      struct time asd;
-     struct closest_road travel_result;
      if (city_roads_load() == 0)
      {
 	  printf("Введите название города, из которого едем\n");
@@ -255,9 +253,6 @@ int main ()
 		    from_number = city_number(from);
 		    to_number =  city_number(to);
 		    search(from_number, to_number, asd);
-		    travel_result = find_closest(from_number, to_number, asd);
-		    if (travel_result.number != -1) printf("Ближайший поезд отправляется в %i %i - %i\n", map[from_number][to_number].way[travel_result.number].departure_time.day,  map[from_number][to_number].way[travel_result.number].departure_time.hour,  map[from_number][to_number].way[travel_result.number].departure_time.minute);
-		    else printf("Уехать вам не суждено\n");
 	       }
 	  else printf ("Не найден город отправления/прибытия\n");
      }

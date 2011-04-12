@@ -22,7 +22,7 @@
 #define STRING_LENGTH 32
 #define CITY_MAX_WAYS 50
 #define MAX_DIFFERENCE_TIME 1440
-#define LIST_FILE "city.txt"
+#define LIST_FILE "data/city.txt"
 
 struct time
 {
@@ -51,6 +51,7 @@ struct dfs_type
 {
      bool washere;
      int camefrom;
+     int way_number;
 };
 
 struct dfs_type dfs_array[MAX_CITY_COUNT];
@@ -116,7 +117,7 @@ int city_roads_load()
 	       for (int j=0; j < MAX_CITY_COUNT; j++) map[i][j].ways_present=-1;
 	  for (int i = 0; i< cities_present; i++)
 	  {
-	       sprintf(openfile,"%s/ways.txt",city[i].name);
+	       sprintf(openfile,"data/%s/ways.txt",city[i].name);
 	       FILE *cityfile = fopen(openfile,"r");
 	       if (cityfile != NULL)
 	       {
@@ -211,6 +212,7 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 	  {
 	       dfs_array[i].camefrom = now;
 	       dfs_array[i].washere = true;
+	       dfs_array[i].way_number = result.number;
 	       if (i == final) 
 	       {
 		    printstats_to_file(final, good);
@@ -221,6 +223,7 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 	       }
 	       dfs_array[i].washere = false;
 	       dfs_array[i].camefrom = -1;
+	       dfs_array[i].way_number = result.number = -1;
 	  }
      }     
      return 0;
@@ -234,6 +237,7 @@ int search (int from, int to, struct time departure_time)
      {
 	  dfs_array[i].washere = false;
 	  dfs_array[i].camefrom = -1;
+	  dfs_array[i].way_number = -1;
      }
      dfs_array[from].washere = true;
      dfs(from, to, true, departure_time);

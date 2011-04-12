@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-/*#include "SDL.h"*/
+#include "SDL.h"
 
 #define MAX_CITY_COUNT 30
 #define STRING_LENGTH 32

@@ -271,6 +271,7 @@ int search (int from, int to, struct time departure_time)
 	  if (bad_file != NULL)
 	  {
 	       printf("Оптимальных маршрутов не найдено, но есть несколько других:\n");
+	       printf("(Оптимальным маршрутом считается маршрут, ожидание на станциях между которым менее 24х часов)\n");
 	       fscanf(bad_file,"%i", &point);
 	       while (!feof(bad_file))
 	       {
@@ -297,22 +298,50 @@ int main ()
 {
      char from[STRING_LENGTH], to[STRING_LENGTH];
      struct time asd;
+     int select;
      if (city_roads_load() == 0)
      {
-	  printf("Введите название города, из которого едем\n");
-	  scanf("%s", from);
-	  printf("Введите название города, в который едем\n");
-	  scanf("%s", to);
-	  if (city_number(from) != -1 && city_number(to) != -1)
+	  do
+	  {
+	       printf("Выберите опцию:\n[1]Ввести искомые города вручную\n[2]Выбрать города из списка\n[0]Выход\n");
+	       scanf("%i", &select);
+	       switch (select)
 	       {
-		    printf("Введите желаемое время отправления: день (1-7), час (0 - 23) и минута (0-59)\n");
-		    scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
-		    int from_number, to_number;
-		    from_number = city_number(from);
-		    to_number =  city_number(to);
-		    search(from_number, to_number, asd);
+	       case 1:
+	       {
+		    printf("Введите название города, из которого едем\n");
+		    scanf("%s", from);
+		    printf("Введите название города, в который едем\n");
+		    scanf("%s", to);
+		    if (city_number(from) != -1 && city_number(to) != -1)
+		    {
+			 printf("Введите желаемое время отправления: день (1-7), час (0 - 23) и минута (0-59)\n");
+			 scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
+			 int from_number, to_number;
+			 from_number = city_number(from);
+			 to_number =  city_number(to);
+			 search(from_number, to_number, asd);
+		    }
+		    else printf ("Не найден город отправления/прибытия\n");
+		    break;
 	       }
-	  else printf ("Не найден город отправления/прибытия\n");
+	       case 2:
+	       {
+		    printf("Not implemented yet!\n");
+		    break;
+	       }
+	       case 0:
+	       {
+		    printf("До свидания!\n");
+		    break;
+	       }
+	       default:
+	       {
+		    printf("Неверная опция\n");
+		    break;			 
+	       }
+	       }
+	  }while (select != 0);
      }
      else printf("Ошибка открытия файла-списка или загрузки путей.\n");
      return 0;

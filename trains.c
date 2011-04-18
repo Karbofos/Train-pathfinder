@@ -170,11 +170,11 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      }
      if (map[from_city][to_city].ways_present != 0)
      {
-	  /*Если разница между временем прибытия и временм отправления меньше суток, помечаем найденный путь как "хороший"*/
+	  /*Если разница между временем прибытия и временм отправления меньше указаной константы, помечаем найденный путь как "хороший"*/
 	  if (best_difference_time <= MAX_DIFFERENCE_TIME) result.good = true;
 	  else result.good = false;
      }
-     return result;
+      return result;
 }
 
 void printstats_to_file (int final, bool good)
@@ -315,7 +315,7 @@ int main ()
 		    scanf("%s", to);
 		    if (city_number(from) != -1 && city_number(to) != -1)
 		    {
-			 printf("Введите желаемое время отправления: день (1-7), час (0 - 23) и минута (0-59)\n");
+			 printf("Введите желаемое время отправления: день (1-7), час (0-23) и минута (0-59)\n");
 			 scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
 			 int from_number, to_number;
 			 from_number = city_number(from);
@@ -327,7 +327,36 @@ int main ()
 	       }
 	       case 2:
 	       {
-		    printf("Not implemented yet!\n");
+		    int from_number, to_number;
+		    printf("Выберите исходный город:\n");
+		    for (int i=1; i<= cities_present; i++)
+		    {
+			 printf("[%i]%s\n",i,city[i-1].name);
+		    }
+		    printf("[0]Выход\n");
+		    scanf("%i", &from_number);
+		    if (from_number > 0 && from_number <= cities_present)
+		    {
+			 printf("Выберите конечный город:\n");
+			 for (int i=1; i<= cities_present; i++)
+			 {
+			      printf("[%i]%s\n",i,city[i-1].name);
+			 }
+			 printf("[0]Выход\n");
+			 scanf("%i", &to_number);
+			 if (to_number > 0 && to_number <= cities_present)
+			 {
+			      if (from_number != to_number)
+			      {
+				   printf("Введите желаемое время отправления: день (1-7), час (0-23) и минута (0-59):\n");
+				   scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
+				   search(from_number -1, to_number -1, asd);
+			      }
+			      else printf("Нельзя указывать один и тот же город отправления/прибытия!\n");
+			 }
+			 else if (to_number < 0 || to_number > cities_present) printf("Введены некорректные данные!\n");
+		    }
+		    else if (from_number < 0 || from_number > cities_present) printf("Введены некорректные данные!\n");
 		    break;
 	       }
 	       case 0:

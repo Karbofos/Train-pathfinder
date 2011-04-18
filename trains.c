@@ -12,7 +12,6 @@
 /* along with this program; if not, write to the Free Software */
 /* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, */
 /* MA 02110-1301, USA. */
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -154,27 +153,31 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      struct closest_road result;
      /*Возвращает -1 в result.number, если дорога не определена; номер дороги в ином случае."Хорошие" дороги возвращает с result.good = TRUE. "Плохие" с FALSE.*/
      int arrival_minutes, departure_minutes, difference_time, best_difference_time;
-     best_difference_time = 10080; /*Количество минут в неделе*/
-     arrival_minutes = from_time.day*24*60 + from_time.hour*60 + from_time.minute;
-     result.number = -1;
-     for (int i=0;i<=map[from_city][to_city].ways_present;i++)
-     {
-	  departure_minutes=map[from_city][to_city].way[i].departure_time.day*24*60 + map[from_city][to_city].way[i].departure_time.hour*60 + map[from_city][to_city].way[i].departure_time.minute;
-	  if (departure_minutes <= arrival_minutes) difference_time = 10080 - arrival_minutes + departure_minutes;
-	  else difference_time = departure_minutes - arrival_minutes;
-	  if (difference_time < best_difference_time)
-	  {
-	       best_difference_time = difference_time;
-	       result.number = i;
-	  }
-     }
      if (map[from_city][to_city].ways_present != 0)
      {
-	  /*Если разница между временем прибытия и временм отправления меньше указаной константы, помечаем найденный путь как "хороший"*/
+	  for (int i=0;i<=map[from_city][to_city].ways_present;i++)
+	  {
+	       best_difference_time = 10080; /*Количество минут в неделе*/
+	       arrival_minutes = from_time.day*24*60 + from_time.hour*60 + from_time.minute;
+	       departure_minutes=map[from_city][to_city].way[i].departure_time.day*24*60 + map[from_city][to_city].way[i].departure_time.hour*60 + map[from_city][to_city].way[i].departure_time.minute;
+	       if (departure_minutes <= arrival_minutes) difference_time = 10080 - arrival_minutes + departure_minutes;
+	       else difference_time = departure_minutes - arrival_minutes;
+	       if (difference_time < best_difference_time)
+	       {
+		    best_difference_time = difference_time;
+		    result.number = i;
+	       }
+	  }
+	  /*Если разница между временем прибытия и временем отправления меньше указаной константы, помечаем найденный путь как "хороший"*/
 	  if (best_difference_time <= MAX_DIFFERENCE_TIME) result.good = true;
 	  else result.good = false;
      }
-      return result;
+     else 
+     {
+	  result.number = -1;
+	  result.good = false;
+     }
+     return result;
 }
 
 void printstats_to_file (int final, bool good)

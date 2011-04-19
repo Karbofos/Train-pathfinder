@@ -155,11 +155,11 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
      int arrival_minutes, departure_minutes, difference_time, best_difference_time;
      if (map[from_city][to_city].ways_present != 0)
      {
+	  best_difference_time = 10080;
 	  for (int i=0;i<=map[from_city][to_city].ways_present;i++)
 	  {
-	       best_difference_time = 10080; /*Количество минут в неделе*/
-	       arrival_minutes = from_time.day*24*60 + from_time.hour*60 + from_time.minute;
-	       departure_minutes=map[from_city][to_city].way[i].departure_time.day*24*60 + map[from_city][to_city].way[i].departure_time.hour*60 + map[from_city][to_city].way[i].departure_time.minute;
+	       arrival_minutes = (from_time.day - 1)*24*60 + from_time.hour*60 + from_time.minute;
+	       departure_minutes = (map[from_city][to_city].way[i].departure_time.day - 1)*24*60 + map[from_city][to_city].way[i].departure_time.hour*60 + map[from_city][to_city].way[i].departure_time.minute;
 	       if (departure_minutes <= arrival_minutes) difference_time = 10080 - arrival_minutes + departure_minutes;
 	       else difference_time = departure_minutes - arrival_minutes;
 	       if (difference_time < best_difference_time)
@@ -209,24 +209,25 @@ int dfs (int now, int final, bool good, struct time arrival_time)
      struct closest_road result;
      for (int i=0; i < cities_present; i++)
      {
-	  result = find_closest(now, i, arrival_time);
-	  if (!result.good) good = false;
-	  if (map[now][i].ways_present != -1 && dfs_array[i].washere == false)
+	  if (map[now][i].ways_present != -1 && dfs_array[i].washere == false && i != now)
 	  {
+	       result = find_closest(now, i, arrival_time);
 	       dfs_array[i].camefrom = now;
 	       dfs_array[i].washere = true;
 	       dfs_array[i].way_number = result.number;
 	       if (i == final) 
 	       {
-		    printstats_to_file(final, good);
+		    if (!result.good) printstats_to_file(final, false); 
+		    else printstats_to_file(final, good);
 	       }
 	       else
 	       {
-		    dfs(i, final, good, map[now][i].way[result.number].arrival_time);
+		    if (!result.good) dfs(i, final, false, map[now][i].way[result.number].arrival_time);
+		    else dfs(i, final, good, map[now][i].way[result.number].arrival_time);
 	       }
 	       dfs_array[i].washere = false;
 	       dfs_array[i].camefrom = -1;
-	       dfs_array[i].way_number = result.number = -1;
+	       dfs_array[i].way_number = -1;
 	  }
      }     
      return 0;

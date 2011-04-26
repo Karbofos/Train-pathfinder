@@ -20,12 +20,12 @@
 #define MAX_CITY_COUNT 30
 #define STRING_LENGTH 32
 #define CITY_MAX_WAYS 50
-#define MAX_DIFFERENCE_TIME 1440
+#define MAX_DIFFERENCE_TIME 24
 #define LIST_FILE "data/city.txt"
 
 struct time
 {
-     int hour, minute, day;
+     int year, month, day, hour;
      /* День недели: примем 1 для понедельника и 7 для воскресенья */
 };
 
@@ -108,7 +108,7 @@ int city_roads_load()
      /* Возвращает 0 в случае удачного открытия файла и наличия в нем записей; 1 если файл открыт, но записей нет и 2 при ошибке открытия */
      char name[STRING_LENGTH];
      char openfile[STRING_LENGTH + 10];
-     int number, result;
+     int number, result, l;
      cities_present = fill_city(LIST_FILE);
      if (cities_present != -1)
      {
@@ -127,13 +127,15 @@ int city_roads_load()
 			 if (number != -1 ) 
 			 {
 			      map[i][number].ways_present++;
-			      int l = map[i][number].ways_present;
+			      l = map[i][number].ways_present;
+			      fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.year);
+			      fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.month);
 			      fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.day);
 			      fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.hour);
-			      fscanf(cityfile,"%i", &map[i][number].way[l].departure_time.minute);
+			      fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.year);
+			      fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.month);
 			      fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.day);
 			      fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.hour);
-			      fscanf(cityfile,"%i", &map[i][number].way[l].arrival_time.minute);
 			 }
 			 else printf ("Город %s присутствует в файле путей города %s, но не объявлен в списке, пропускаем.", name, city[i].name);
 		    }
@@ -152,23 +154,22 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
 {
      struct closest_road result;
      /*Возвращает -1 в result.number, если дорога не определена; номер дороги в ином случае."Хорошие" дороги возвращает с result.good = TRUE. "Плохие" с FALSE.*/
-     int arrival_minutes, departure_minutes, difference_time, best_difference_time;
-     if (map[from_city][to_city].ways_present != 0)
+     int difference_time, best_difference_time;
+     if (map[from_city][to_city].ways_present != -1)
      {
-	  best_difference_time = 10080;
-	  for (int i=0;i<=map[from_city][to_city].ways_present;i++)
+	  best_difference_time = (map[from_city][to_city].way[0].departure_time.year - from_time.year)*365*24 + (map[from_city][to_city].way[0].departure_time.month - from_time.month)*30*24 + (map[from_city][to_city].way[0].departure_time.day - from_time.day)*24 +  (map[from_city][to_city].way[0].departure_time.hour - from_time.hour);
+	  result.number = 0;
+	  for (int i=1;i<=map[from_city][to_city].ways_present;i++)
 	  {
-	       arrival_minutes = (from_time.day - 1)*24*60 + from_time.hour*60 + from_time.minute;
-	       departure_minutes = (map[from_city][to_city].way[i].departure_time.day - 1)*24*60 + map[from_city][to_city].way[i].departure_time.hour*60 + map[from_city][to_city].way[i].departure_time.minute;
-	       if (departure_minutes <= arrival_minutes) difference_time = 10080 - arrival_minutes + departure_minutes;
-	       else difference_time = departure_minutes - arrival_minutes;
-	       if (difference_time < best_difference_time)
+	       difference_time = (map[from_city][to_city].way[i].departure_time.year - from_time.year)*365*24 + (map[from_city][to_city].way[i].departure_time.month - from_time.month)*30*24 + (map[from_city][to_city].way[i].departure_time.day - from_time.day)*24 +  (map[from_city][to_city].way[i].departure_time.hour - from_time.hour);
+	       if (difference_time < best_difference_time && difference_time > 0)
 	       {
 		    best_difference_time = difference_time;
 		    result.number = i;
 	       }
 	  }
 	  /*Если разница между временем прибытия и временем отправления меньше указаной константы, помечаем найденный путь как "хороший"*/
+	  if (best_difference_time < 0) result.number = -1;
 	  if (best_difference_time <= MAX_DIFFERENCE_TIME) result.good = true;
 	  else result.good = false;
      }
@@ -211,11 +212,11 @@ int dfs (int now, int final, bool good, struct time arrival_time)
      {
 	  if (map[now][i].ways_present != -1 && dfs_array[i].washere == false && i != now)
 	  {
-	       result = find_closest(now, i, arrival_time);
 	       dfs_array[i].camefrom = now;
 	       dfs_array[i].washere = true;
 	       dfs_array[i].way_number = result.number;
-	       if (i == final) 
+	       result = find_closest(now, i, arrival_time);
+	       if (i == final && result.number != -1) 
 	       {
 		    if (!result.good) printstats_to_file(final, false); 
 		    else printstats_to_file(final, good);
@@ -293,7 +294,7 @@ int search (int from, int to, struct time departure_time)
 	       fclose(bad_file);
 	       remove("bad.txt");
 	  }
-	  else printf("Не найдено ни одного маршрута\n");
+	  else printf("Не найдено ни одного маршрута.\nВозможно, все поезда уже уехали?\n");
      }
      return 0;
 }
@@ -319,8 +320,8 @@ int main ()
 		    scanf("%s", to);
 		    if (city_number(from) != -1 && city_number(to) != -1)
 		    {
-			 printf("Введите желаемое время отправления: день (1-7), час (0-23) и минута (0-59)\n");
-			 scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
+			 printf("Введите желаемое время отправления(год месяц день час):\n");
+			 scanf("%i %i %i %i", &asd.year, &asd.month, &asd.day, &asd.hour);
 			 int from_number, to_number;
 			 from_number = city_number(from);
 			 to_number =  city_number(to);
@@ -352,8 +353,8 @@ int main ()
 			 {
 			      if (from_number != to_number)
 			      {
-				   printf("Введите желаемое время отправления: день (1-7), час (0-23) и минута (0-59):\n");
-				   scanf("%i %i %i",&asd.day, &asd.hour, &asd.minute);
+				   printf("Введите желаемое время отправления(год месяц день час):\n");
+				   scanf("%i %i %i %i", &asd.year, &asd.month, &asd.day, &asd.hour);
 				   search(from_number -1, to_number -1, asd);
 			      }
 			      else printf("Нельзя указывать один и тот же город отправления/прибытия!\n");

@@ -167,6 +167,10 @@ struct closest_road find_closest(int from_city, int to_city, struct time from_ti
 		    best_difference_time = difference_time;
 		    result.number = i;
 	       }
+	       else
+	       {
+		    if (difference_time > 0 && best_difference_time < 0) best_difference_time = difference_time;
+	       }
 	  }
 	  /*Если разница между временем прибытия и временем отправления меньше указаной константы, помечаем найденный путь как "хороший"*/
 	  if (best_difference_time < 0) result.number = -1;
@@ -216,15 +220,18 @@ int dfs (int now, int final, bool good, struct time arrival_time)
 	       dfs_array[i].washere = true;
 	       dfs_array[i].way_number = result.number;
 	       result = find_closest(now, i, arrival_time);
-	       if (i == final && result.number != -1) 
+	       if (result.number != -1)
 	       {
-		    if (!result.good) printstats_to_file(final, false); 
-		    else printstats_to_file(final, good);
-	       }
-	       else
-	       {
-		    if (!result.good) dfs(i, final, false, map[now][i].way[result.number].arrival_time);
-		    else dfs(i, final, good, map[now][i].way[result.number].arrival_time);
+		    if (i == final)
+		    {
+			 if (!result.good) printstats_to_file(final, false); 
+			 else printstats_to_file(final, good);
+		    }
+		    else
+		    {
+			 if (!result.good) dfs(i, final, false, map[now][i].way[result.number].arrival_time);
+			 else dfs(i, final, good, map[now][i].way[result.number].arrival_time);
+		    }
 	       }
 	       dfs_array[i].washere = false;
 	       dfs_array[i].camefrom = -1;

@@ -474,26 +474,3 @@ int main ()
      else printf("Ошибка открытия файла-списка или загрузки путей.\n");
      return 0;
 }
-
-/*
-int main()
-{
-     int i;
-     city_roads_load();
-     if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
-     {
-	  fprintf(stderr, "Не могу инициализировать SDL: %s\n", SDL_GetError());
-	  exit(1);
-     }
-     SDL_Surface *screen;
-     screen = SDL_SetVideoMode(800, 600, 24, SDL_SWSURFACE);
-     if ( screen == NULL )
-     {
-	  fprintf(stderr, "Невозможно установить разрешение 800x600: %s\n", SDL_GetError());
-	  exit(1);
-     }
-     ShowImage(screen, 0, 0);
-     scanf("%i", &i);
-     atexit(SDL_Quit);
-}
-*/

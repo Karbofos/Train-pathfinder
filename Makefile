@@ -15,7 +15,7 @@ trains.o = trains.c
 .PHONY: check-syntax
 
 compile:
-	gcc -o "trains" "trains.c" `sdl-config --cflags --libs`  -std=c99 -Wall -pedantic
+	gcc -o "trains" "trains.c" `sdl-config --cflags --libs`  -std=c99 -Wall -pedantic -lSDL_image
 clean:
 	rm -f trains.o
 

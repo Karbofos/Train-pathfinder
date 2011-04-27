@@ -16,12 +16,14 @@
 #include <stdbool.h>
 #include <string.h>
 #include "SDL.h"
+#include "SDL_image.h"
 
 #define MAX_CITY_COUNT 30
 #define STRING_LENGTH 32
 #define CITY_MAX_WAYS 50
 #define MAX_DIFFERENCE_TIME 24
 #define LIST_FILE "data/city.txt"
+#define MAP_IMAGE_PATH "data/map.jpg"
 
 struct time
 {
@@ -68,6 +70,28 @@ struct cityname city[MAX_CITY_COUNT];
 /* Выглядит криво, но на самом деле гораздо читабельнее. */
 
 int cities_present;
+
+void ShowImage(char image_path[100], SDL_Surface *screen_local, int x, int y)
+{
+     SDL_Surface *image;
+     SDL_Rect dest;
+     
+     image = IMG_Load(image_path);
+     if ( image == NULL ) 
+     {
+	  fprintf(stderr, "Невозможно загрузить %s: %s\n", image_path, SDL_GetError());
+	  return;
+     }
+     else
+     {
+	  dest.x = x;
+	  dest.y = y;
+	  dest.w = image->w;
+	  dest.h = image->h;
+	  SDL_BlitSurface(image, NULL, screen_local, &dest);
+	  SDL_UpdateRects(screen_local, 1, &dest);
+     }
+}
 
 int fill_city(char cityfile_name[STRING_LENGTH])
 {
@@ -241,6 +265,67 @@ int dfs (int now, int final, bool good, struct time arrival_time)
      return 0;
 }
 
+int draw_way(char *source_file_name, int max_ways)
+{
+     int asd;
+     FILE *source_file;
+     do
+     {
+	  printf("Введите номер пути, который вы хотите просмотреть или 0 для выхода:\n");
+	  scanf("%i", &asd);
+	  if (asd > 0 && asd <= max_ways)
+	  {
+	       if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
+	       {
+		    fprintf(stderr, "Не могу инициализировать SDL: %s\n", SDL_GetError());
+		    exit(1);
+	       }
+	       SDL_Surface *screen;
+	       screen = SDL_SetVideoMode(800, 600, 24, SDL_SWSURFACE);
+	       if ( screen == NULL )
+	       {
+		    fprintf(stderr, "Невозможно установить разрешение 800x600: %s\n", SDL_GetError());
+		    exit(1);
+	       }
+	       ShowImage(MAP_IMAGE_PATH, screen, 0, 0);
+	       atexit(SDL_Quit);
+
+	       source_file = fopen(source_file_name, "r");
+	       /*Не проверяем наличие файла, он был. Точно был. Проверяли в процедуре, из которой вызывали.*/
+	       int s, prev;
+	       char name[100];
+	       
+	       for (int i=1; i<asd; i++)
+	       {
+		    do
+		    {
+			 fscanf(source_file,"%i", &s);
+		    }while(s != -1);
+		    /*Вот тут обработка изображения*/
+	       }
+
+	       fscanf(source_file, "%i", &s);
+	       sprintf(name,"data/%s/%s.png",city[s].name, city[s].name);
+	       ShowImage(name, screen, 0, 0);
+	       prev = s;
+	       fscanf(source_file, "%i", &s);
+	       while(s != -1)
+	       {
+		    sprintf(name,"data/%s/%s.png", city[prev].name, city[s].name);
+		    ShowImage(name, screen, 0, 0);
+		    sprintf(name,"data/%s/%s.png", city[s].name, city[s].name);
+		    ShowImage(name, screen, 0, 0);
+		    prev = s;
+		    fscanf(source_file, "%i", &s);
+	       }
+	       scanf("%i", &s);
+	       SDL_Quit();
+	  }
+	  else if (asd != 0) printf("Нет пути с таким номером!\n");
+     }while(asd != 0);
+     return 0;
+}
+
 int search (int from, int to, struct time departure_time)
 {
      FILE *good_file, *bad_file;
@@ -276,7 +361,7 @@ int search (int from, int to, struct time departure_time)
 	       printf("\n");
 	  }
 	  fclose(good_file);
-	  remove("good.txt");
+	  draw_way("good.txt",ways_count);
      }
      else 
      {
@@ -299,10 +384,12 @@ int search (int from, int to, struct time departure_time)
 		    printf("\n");
 	       }
 	       fclose(bad_file);
-	       remove("bad.txt");
+	       draw_way("bad.txt", ways_count);
 	  }
 	  else printf("Не найдено ни одного маршрута.\nВозможно, все поезда уже уехали?\n");
      }
+     remove("bad.txt");
+     remove("good.txt");
      return 0;
 }
 
@@ -387,3 +474,26 @@ int main ()
      else printf("Ошибка открытия файла-списка или загрузки путей.\n");
      return 0;
 }
+
+/*
+int main()
+{
+     int i;
+     city_roads_load();
+     if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
+     {
+	  fprintf(stderr, "Не могу инициализировать SDL: %s\n", SDL_GetError());
+	  exit(1);
+     }
+     SDL_Surface *screen;
+     screen = SDL_SetVideoMode(800, 600, 24, SDL_SWSURFACE);
+     if ( screen == NULL )
+     {
+	  fprintf(stderr, "Невозможно установить разрешение 800x600: %s\n", SDL_GetError());
+	  exit(1);
+     }
+     ShowImage(screen, 0, 0);
+     scanf("%i", &i);
+     atexit(SDL_Quit);
+}
+*/

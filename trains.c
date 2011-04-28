@@ -288,8 +288,7 @@ int draw_way(char *source_file_name, int max_ways)
 		    exit(1);
 	       }
 	       ShowImage(MAP_IMAGE_PATH, screen, 0, 0);
-	       atexit(SDL_Quit);
-
+	       
 	       source_file = fopen(source_file_name, "r");
 	       /*Не проверяем наличие файла, он был. Точно был. Проверяли в процедуре, из которой вызывали.*/
 	       int s, prev;
@@ -318,7 +317,35 @@ int draw_way(char *source_file_name, int max_ways)
 		    prev = s;
 		    fscanf(source_file, "%i", &s);
 	       }
-	       scanf("%i", &s);
+	       bool done = false;
+	       while(!done)
+	       {
+		    SDL_Event event;
+		    if(SDL_PollEvent(&event))
+		    {
+			 switch (event.type)
+			 {
+			 case SDL_KEYUP:
+			      switch (event.key.keysym.sym) 
+			      {
+			      case SDLK_ESCAPE:
+				   done = true;
+				   break;
+			      default: break;
+			      }
+			      break;
+			 case SDL_MOUSEBUTTONDOWN:
+			      done = 1;
+			      break;
+			 case SDL_QUIT:
+			      done = 1;
+			      break;
+			 default:
+			      break;
+			 }
+		    }
+	       }
+	       atexit(SDL_Quit);
 	       SDL_Quit();
 	  }
 	  else if (asd != 0) printf("Нет пути с таким номером!\n");

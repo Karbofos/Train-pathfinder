@@ -71,7 +71,7 @@ struct cityname city[MAX_CITY_COUNT];
 
 int cities_present;
 
-void ShowImage(char image_path[100], SDL_Surface *screen_local, int x, int y)
+void ShowImage(char image_path[STRING_LENGTH], SDL_Surface *screen_local, int x, int y)
 {
      SDL_Surface *image;
      SDL_Rect dest;
@@ -291,8 +291,9 @@ int draw_way(char *source_file_name, int max_ways)
 	       
 	       source_file = fopen(source_file_name, "r");
 	       /*Не проверяем наличие файла, он был. Точно был. Проверяли в процедуре, из которой вызывали.*/
+	       /*Хотя это конечно не очень культурно, но понадеемся, что файл не исчез во время работы*/
 	       int s, prev;
-	       char name[100];
+	       char name[STRING_LENGTH];
 	       
 	       for (int i=1; i<asd; i++)
 	       {
@@ -300,7 +301,6 @@ int draw_way(char *source_file_name, int max_ways)
 		    {
 			 fscanf(source_file,"%i", &s);
 		    }while(s != -1);
-		    /*Вот тут обработка изображения*/
 	       }
 
 	       fscanf(source_file, "%i", &s);
